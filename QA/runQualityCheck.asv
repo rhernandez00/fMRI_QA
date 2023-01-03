@@ -125,7 +125,9 @@ for nKey = 1:numel(keyList)
     indx2 = indxDvars{nKey};
     indx = sum([indx1,indx2],2)>0;
     indx = logical(indx);
-    writeTxt([savePath,'/',primaryKey,'.txt'],indx); %
+    writeTxt([savePath,'/',primaryKey,'.txt'],indx);
+    writematrix(indx,[savePath,'/',primaryKey,'.txt']);
+
     
 end
 

@@ -1,7 +1,7 @@
 function [lostVolumes,totalVolumes,matTxt,vals,fileName] = fuctionToTxt(project,specie,thr,participant,run,varargin)
 
-filesPath = getArgumentValue('pathIn',['G:\My Drive','\Results\',project,'\movement'],varargin{:});
-savePath = getArgumentValue('pathOut',['D:\Raul\results\',project,'\movement\',specie],varargin{:});
+filesPath = getArgumentValue('pathIn',['G:/My Drive','/Results/',project,'/movement'],varargin{:});
+savePath = getArgumentValue('pathOut',['D:/Raul/results/',project,'/movement/',specie],varargin{:});
 saveTxt = getArgumentValue('saveTxt',true,varargin{:});
 program = getArgumentValue('program','FSL',varargin{:});
 functionToUse = getArgumentValue('functionToUse','fwd',varargin{:});
@@ -11,23 +11,23 @@ switch functionToUse
         switch program
             case 'FSL'
                 cfg.prepro_suite =  'fsl-fs';
-                cfg.motionparam =[filesPath,'\',project,specie,sprintf('%02d',participant),'run',sprintf('%02d',run),'.par'];
+                cfg.motionparam =[filesPath,'/',project,specie,sprintf('%02d',participant),'run',sprintf('%02d',run),'.par'];
             case 'spm'
                 cfg.prepro_suite =  'spm';
-                cfg.motionparam =[filesPath,'\',project,specie,sprintf('%02d',participant),'run',sprintf('%02d',run),'.txt'];
+                cfg.motionparam =[filesPath,'/',project,specie,sprintf('%02d',participant),'run',sprintf('%02d',run),'.txt'];
             otherwise
                 error([program, ' not available. Programs accepted are FSL and spm']);
         end
 
         cfg.radius = 28;
 
-        fileName  = [filesPath,'\',project,specie,sprintf('%02d',participant),'run',sprintf('%02d',run),'.par'];
+        fileName  = [filesPath,'/',project,specie,sprintf('%02d',participant),'run',sprintf('%02d',run),'.par'];
         disp(['Running fwd for: ',cfg.motionparam]);
         [fwd,~]=bramila_framewiseDisplacement(cfg);
         vals = fwd;
     case 'dvars'
-        fileName = [filesPath,'\',project,specie,sprintf('%02d',participant),'run',sprintf('%02d',run),'.nii'];
-        folderName = [filesPath,'\',project,specie,sprintf('%02d',participant),'run',sprintf('%02d',run)];
+        fileName = [filesPath,'/',project,specie,sprintf('%02d',participant),'run',sprintf('%02d',run),'.nii'];
+        folderName = [filesPath,'/',project,specie,sprintf('%02d',participant),'run',sprintf('%02d',run)];
         
         if ~exist(fileName,'file') %checking if the file or folder are available. Then load
             disp(['File ,' fileName,' not found, checking for folder']);
@@ -66,10 +66,14 @@ if ~isempty(indxNums)
 else
     matTxt = zeros(length(vals),1);
 end
-fileOut = [savePath,'\sub',sprintf('%03d',participant),'_run',sprintf('%03d',run),'.txt'];
+% if appendMov
+%     matTxt
+% end
+fileOut = [savePath,'/sub',sprintf('%03d',participant),'_run',sprintf('%03d',run),'.txt'];
 if saveTxt
     disp(['Writting file: ',fileOut]);
-    writematrix(matTxt,fileOut);
+    %writematrix(matTxt,fileOut);
+    writeTxt(fileOut,matTxt);
     %xlswrite(fileOut,logical(matTxt));
     %dlmwrite(fileOut,matTxt);
 else

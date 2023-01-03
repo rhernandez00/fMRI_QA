@@ -12,7 +12,7 @@ if istable(matTxt)
     fNames = matTxt.Properties.VariableNames;
     lineY = fNames{1};
     for nField = 2:numel(fNames)
-        lineY = [lineY,',',fNames{nField}];
+        lineY = [lineY,' ',fNames{nField}];
     end
     fprintf(fileID,lineY,'%s');
     fprintf(fileID,'\n');
@@ -26,7 +26,7 @@ for nRow = 1:size(matTxt,1) %writes every line from matTxt
     for n = 1:20 %removes extra white spaces
         lineX = strrep(lineX,'  ',' ');
     end
-    lineY = strrep(lineX,' ',',');
+    lineY = strrep(lineX,' ',' ');
     fprintf(fileID,lineY,'%s');
     if nRow ~= size(matTxt,1)
         fprintf(fileID,'\n');
