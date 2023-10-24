@@ -1,14 +1,18 @@
 clear
 
-thr_fwd = 0.5; %fwd threshold
+addpath([pwd,'/functions']);
+addpath([pwd,'/NIfTI_toolbox']);
+thr_fwd = 1; %fwd threshold %1 sparse sampling, 0.5 continous
 thr_dvars = 0.5; %dvars threshold
 tableName = [pwd,'/table.xlsx']; %path of the output table 
 filesPath = [pwd,'/input']; %folder of files to analyze
 savePath = [pwd,'/txt']; %output folder
 
 
-cfg.radius = 28; %some option needed for fwd, we never change this
-fileList = {dir([filesPath,'/*.*']).name};
+cfg.radius = 55; %55 Matches with FSL
+fileList = dir([filesPath,'/*.*']);
+fileList = {fileList.name};
+
 fileList(1:2) = [];
 
 primaryKeyList = cell(1,size(fileList,2));
