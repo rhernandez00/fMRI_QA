@@ -7,7 +7,7 @@ filesPath = [pwd,'/input']; %folder of files to analyze
 savePath = [pwd,'/txt']; %output folder
 
 
-cfg.radius = 28; %some option needed for fwd, we never change this
+cfg.radius = 50; %some option needed for fwd, we never change this
 fileList = {dir([filesPath,'/*.*']).name};
 fileList(1:2) = [];
 
