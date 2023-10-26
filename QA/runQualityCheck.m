@@ -1,14 +1,32 @@
-clear
+%This script calculates framewise displacement and DVARS using bramila_fwd and bramila_dvars. 
+%These quality measurements come from the paper: Power et al. (2012) doi:10.1016/j.neuroimage.2011.10.018
+%Author: Raul Hernandez January/2023
 
+%--Make sure the current MATLAB path matches with the path where this script is--
+
+%The function reads the files found in the "input" folder and outputs files
+%in a "txt" folder. The function uses movement files (.par .txt) to calculate 
+%framewise displacement or nifti files (.nii or .nii.gz) to calculate DVARS. 
+%If the function finds in the "input" folder movement and nifti files with 
+%the same name, it will calculate both measurements.
+%Note. If the movement file or the nifti file is not found, it will fill with zeros the corresponding column.
+
+clear
 thr_fwd = 0.5; %fwd threshold
 thr_dvars = 0.5; %dvars threshold
+
 tableName = [pwd,'/table.xlsx']; %path of the output table 
 filesPath = [pwd,'/input']; %folder of files to analyze
 savePath = [pwd,'/txt']; %output folder
 
+if ~exist(savePath,'dir')
+    mkdir(savePath);
+end
 
-cfg.radius = 50; %some option needed for fwd, we never change this
-fileList = {dir([filesPath,'/*.*']).name};
+cfg.radius = 50; %some option needed for fwd. Attila shared a script that used 28. FSL uses 50 as default
+
+fileList = dir([filesPath,'/*.*']);
+fileList = {fileList.name};
 fileList(1:2) = [];
 
 primaryKeyList = cell(1,size(fileList,2));
@@ -66,8 +84,7 @@ for nKey = 1:numel(keyList)
     lostVolumes = numel(indxNums);
     tableOut.fwd(nKey) = mean(fwd);
     tableOut.fwd_clean(nKey) = mean(fwd(fwd < thr_fwd));
-    tableOut.lostVolumesAfterfwd(nKey) = lostVolumes;
-    
+    tableOut.volumesLostAfter_fwd(nKey) = lostVolumes;
     tableOut.totalVolumes(nKey) = totalVolumes;
     
 
@@ -126,6 +143,10 @@ for nKey = 1:numel(keyList)
     indx = sum([indx1,indx2],2)>0;
     indx = logical(indx);
     writeTxt([savePath,'/',primaryKey,'.txt'],indx); %
-    
 end
-
+if exist(tableName,'file')
+    disp(['Table found: ', tableName, ' deleting it...']);
+    delete(tableName);
+end
+writetable(tableOut,tableName);
+disp([tableName, ' written'])
