@@ -56,7 +56,8 @@ preproSuiteList = cell(numel(keyList),1);
 preproSuiteList(:) ={'unkown'};
 tableOut = table(keyList,preproSuiteList,zeros(size(keyList)),...
     zeros(size(keyList)),zeros(size(keyList)),zeros(size(keyList)),...
-    'VariableNames',{'primaryKey','PreproSuite','fwd','fwd_clean','volumesLostAfter_fwd','totalVolumes'});
+    'VariableNames',{'primaryKey','PreproSuite','fwd','fwd_clean',...
+    'volumesLostAfter_fwd','totalVolumes'});
 
 %This runs fwd for each primaryKey if movement files are found
 indxfwd = cell(1,numel(keyList));
