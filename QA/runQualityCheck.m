@@ -12,8 +12,16 @@
 %Note. If the movement file or the nifti file is not found, it will fill with zeros the corresponding column.
 
 clear
-thr_fwd = 0.5; %fwd threshold
-thr_dvars = 0.5; %dvars threshold
+thr_fwd = 0.3; %fwd threshold
+thr_dvars = 1; %dvars threshold %Note. Version before 7/Nov/2023 used standard deviation, now it uses absolute % of signal change
+
+%which type to use for generating the txt? 
+whichType = 'or'; %Note. I only tested this for 'or', others might not work
+%Takes:
+% 'fwd': for generating using only volumes marked by fwd
+% 'dvars': for generating using only volumnes marked by dvars
+% 'or': will mark the volumes who excede the threshold in any of the two measurements
+% 'and': will mark the volumes who excede the threshold in both measurements
 
 tableName = [pwd,'/table.xlsx']; %path of the output table 
 filesPath = [pwd,'/input']; %folder of files to analyze
@@ -23,7 +31,7 @@ if ~exist(savePath,'dir')
     mkdir(savePath);
 end
 
-cfg.radius = 50; %some option needed for fwd. Attila shared a script that used 28. FSL uses 50 as default
+cfg.radius = 55; %some option needed for fwd. Attila shared a script that used 28. FSL uses 55 as default
 
 fileList = dir([filesPath,'/*.*']);
 fileList = {fileList.name};
@@ -109,9 +117,10 @@ for nKey = 1:numel(keyList)
         continue
     end
     cfg.vol = vol.img; %assigns the nii file
-    [dvars]=bramila_dvars(cfg); %runs dvars
-    dvarsZ = abs([0;zscore(dvars(2:end))]);%transforms dvars to zscore
-    indx = dvarsZ > thr_dvars; %
+    
+    [~,img]=bramila_dvars(cfg); %runs dvars as % of change in the whole image
+    dvarsPer = abs(mean(img,2)); %calculates the absolute of the average % of change across the image
+    indx = dvarsPer > thr_dvars; %thresholds the %
     indxNums = find(indx);
     totalVolumes = numel(indx);
     lostVolumes = length(indxNums);
@@ -125,8 +134,8 @@ for nKey = 1:numel(keyList)
                 num2str(tableOut.totalVolumes(nKey))]);
         end
     end
-    tableOut.dvars(nKey) = mean(dvarsZ);
-    tableOut.dvars_clean(nKey) = mean(dvarsZ(dvarsZ < thr_fwd));
+    tableOut.dvars(nKey) = mean(dvarsPer);
+    tableOut.dvars_clean(nKey) = mean(dvarsPer(dvarsPer < thr_dvars));
     tableOut.lostVolumesAfterdvars(nKey) = lostVolumes;
     indxDvars{nKey} = indx;
 end
@@ -141,9 +150,24 @@ for nKey = 1:numel(keyList)
     end
     indx1 = indxfwd{nKey};
     indx2 = indxDvars{nKey};
-    indx = sum([indx1,indx2],2)>0;
-    indx = logical(indx);
-    writeTxt([savePath,'/',primaryKey,'.txt'],indx); %
+    indx = sum([indx1,indx2],2)>0; %or
+    tableOut.lostVolumes_fw_or_dvars(nKey) = sum(indx);
+    
+    indxAnd = sum([indx1,indx2],2)>1; %and
+    tableOut.lostVolumes_fw_and_dvars(nKey) = sum(indxAnd);
+    
+    
+    switch whichType
+        case 'dvars'
+            indxOut = logical(indx2);
+        case 'fwd'
+            indxOut = logical(indx1);
+        case 'or'
+            indxOut = logical(indx);
+        case 'and'
+            indxOut = logical(indxAnd);
+    end
+    writeTxt([savePath,'/',primaryKey,'.txt'],indxOut); %
 end
 if exist(tableName,'file')
     disp(['Table found: ', tableName, ' deleting it...']);
